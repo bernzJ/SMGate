@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">SMGate</string>
+    <string name="settings">Settings</string>
+    <string name="preference_default_server_ip">127.0.0.1</string>
+    <integer name="preference_default_server_port">80</integer>
+    <bool name="preference_default_running">false</bool>
+
+    <string name="server_running_text">SMGate server running</string>
+    <string name="preference_file_key">com.benz.smgate.prefs</string>
+    <string name="preference_running">com.benz.smgate.prefs.running</string>
+    <string name="preference_server_ip">com.benz.smgate.prefs.server_ip</string>
+    <string name="preference_server_port">com.benz.smgate.prefs.server_port</string>
+</resources>

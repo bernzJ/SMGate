@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.benz.smgate.MainActivity">
+    <item
+        android:id="@+id/settingsFragment"
+        android:orderInCategory="300"
+        android:title="@string/settings"
+        android:icon="@drawable/ic_baseline_settings_20px"
+        app:showAsAction="always" />
+</menu>
