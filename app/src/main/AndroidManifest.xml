@@ -11,7 +11,7 @@
         android:theme="@style/AppTheme">
         <service
             android:name=".Server"
-            android:exported="false"></service>
+            android:exported="false" />
 
         <activity
             android:name=".MainActivity"

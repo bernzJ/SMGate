@@ -25,10 +25,12 @@ public class MainFragment extends Fragment {
     private SettingsManager settingsManager;
     private Server serverService = null;
     private boolean serviceBound = false;
+    private boolean shouldUpdate = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+
         Context context = getContext();
         settingsManager = new SettingsManager(context);
 
@@ -36,6 +38,9 @@ public class MainFragment extends Fragment {
         ContextCompat.startForegroundService(context, serverIntent);
         context.bindService(serverIntent, serverConnection, context.BIND_AUTO_CREATE);
 
+        if (getArguments() != null) {
+            shouldUpdate = getArguments().getBoolean("shouldUpdate", false);
+        }
 
         View view = inflater.inflate(R.layout.main_fragment, container, false);
         TextView textMainLog = view.findViewById(R.id.textMainLog);
@@ -69,10 +74,10 @@ public class MainFragment extends Fragment {
             serverService.setContext(getContext());
             serviceBound = true;
 
-            // TextView textMainLog = getView().findViewById(R.id.textMainLog);
-            // textMainLog.setText(serverService.getLogs());
-
             if (serviceBound) {
+                if (shouldUpdate) {
+                    serverService.stopServer();
+                }
                 if (!settingsManager.running && serverService.isAlive()) {
                     serverService.stopServer();
                 }

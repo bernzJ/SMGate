@@ -24,6 +24,15 @@ public class Server extends Service {
     private SettingsManager preferences;
     private Context context;
 
+    private void internalStop() {
+        if (webServer == null) {
+            return;
+        }
+        if (webServer.isAlive())
+            webServer.stop();
+        webServer = null;
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     private void startMyOwnForeground() {
         String NOTIFICATION_CHANNEL_ID = getText(R.string.app_name).toString();
@@ -64,12 +73,7 @@ public class Server extends Service {
 
     @Override
     public void onDestroy() {
-        if (webServer == null) {
-            return;
-        }
-        if (webServer.isAlive())
-            webServer.stop();
-        webServer = null;
+        internalStop();
     }
 
     @Override
@@ -87,7 +91,7 @@ public class Server extends Service {
 
     public void startServer() {
         if (webServer == null) {
-            webServer = new WebServer(preferences.serverIP, preferences.serverPort);
+            webServer = new WebServer(preferences.serverIP, preferences.serverPort, preferences.useIntent);
             webServer.setContext(context);
         }
         if (preferences.running) {
@@ -105,6 +109,7 @@ public class Server extends Service {
     }
 
     public void stopServer() {
+        internalStop();
         stopSelf();
         Toast.makeText(context, "SMGate server stopped.", Toast.LENGTH_SHORT).show();
     }

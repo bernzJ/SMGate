@@ -78,6 +78,28 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
+        <TextView
+            android:layout_width="197dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.17"
+            android:text="@string/use_intent_to_send_sms"
+            android:textSize="15sp" />
+
+        <Switch
+            android:textSize="20sp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/switchUseIntent"
+            android:layout_weight="0.3"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:paddingTop="20dp"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
         <Button
             android:id="@+id/btnSave"
             android:layout_width="match_parent"

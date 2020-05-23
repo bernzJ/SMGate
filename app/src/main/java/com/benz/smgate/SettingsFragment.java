@@ -31,10 +31,12 @@ public class SettingsFragment extends Fragment {
         Button btnSave = view.findViewById(R.id.btnSave);
 
         Switch switchIsEnabled = view.findViewById(R.id.switchIsEnabled);
+        Switch switchUseIntent = view.findViewById(R.id.switchUseIntent);
         EditText textServerIP = view.findViewById(R.id.textServerIP);
         EditText textServerPort = view.findViewById(R.id.textServerPort);
 
         switchIsEnabled.setChecked(settingsManager.running);
+        switchUseIntent.setChecked(settingsManager.useIntent);
         textServerIP.setText(settingsManager.serverIP);
         textServerPort.setText(String.valueOf(settingsManager.serverPort));
 
@@ -46,12 +48,16 @@ public class SettingsFragment extends Fragment {
                 View view = v.getRootView();
                 if (view != null) {
                     Switch switchIsEnabled = view.findViewById(R.id.switchIsEnabled);
+                    Switch switchUseIntent = view.findViewById(R.id.switchUseIntent);
                     EditText textServerIP = view.findViewById(R.id.textServerIP);
                     EditText textServerPort = view.findViewById(R.id.textServerPort);
 
-                    settingsManager.setSettings(switchIsEnabled.isChecked(), textServerIP.getText().toString(), Integer.parseInt(textServerPort.getText().toString()));
+                    Bundle args = new Bundle();
+                    args.putBoolean("shouldUpdate", true);
+
+                    settingsManager.setSettings(switchIsEnabled.isChecked(), switchUseIntent.isChecked(), textServerIP.getText().toString(), Integer.parseInt(textServerPort.getText().toString()));
                     NavHostFragment.findNavController(SettingsFragment.this)
-                            .navigate(R.id.action_settingsFragment_to_mainFragment);
+                            .navigate(R.id.action_settingsFragment_to_mainFragment, args);
                 }
             }
         });
@@ -72,8 +78,6 @@ public class SettingsFragment extends Fragment {
                         ) {
                             switchIsEnabled.setChecked(false);
                             Toast.makeText(getActivity().getApplicationContext(), "Please complete all fields", Toast.LENGTH_LONG).show();
-                        } else {
-                            settingsManager.setSettings(switchIsEnabled.isChecked(), textServerIP.getText().toString(), Integer.parseInt(textServerPort.getText().toString()));
                         }
                     }
                 }

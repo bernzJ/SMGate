@@ -6,6 +6,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.Telephony;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -18,24 +21,27 @@ import java.util.Map;
 
 import android.telephony.SmsManager;
 
+import androidx.annotation.RequiresApi;
+
 import fi.iki.elonen.NanoHTTPD;
 
 class WebServer extends NanoHTTPD {
 
     private Context context;
-    private final StringBuilder log = new StringBuilder();
-    private static final String SENT = "SMS_SENT";
-    private final SmsManager smsManager = SmsManager.getDefault();
     private BroadcastReceiver sentReceiver;
+    private boolean useIntent = false;
+    private final StringBuilder log = new StringBuilder();
+    private final SmsManager smsManager = SmsManager.getDefault();
+    private static final String SENT = "SMS_SENT";
 
-    WebServer(String ip, int port) {
+    WebServer(String ip, int port, boolean useIntent) {
         super(ip, port);
+        this.useIntent = useIntent;
     }
 
     public void setContext(Context context) {
         this.context = context;
     }
-
 
     @Override
     public void start() throws IOException {
@@ -101,7 +107,30 @@ class WebServer extends NanoHTTPD {
         return newFixedLengthResponse(WrapInto("SMGate", content));
     }
 
+
     public void sendSms(String num, String message) {
+        // @TODO: remove this, its dumb.
+        if (useIntent) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                String defaultSmsPackageName = Telephony.Sms.getDefaultSmsPackage(context);
+                Intent sendIntent = new Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:" + num));
+                sendIntent.putExtra(Intent.EXTRA_TEXT, message);
+
+                if (defaultSmsPackageName != null) {
+                    sendIntent.setPackage(defaultSmsPackageName);
+                }
+                context.startActivity(sendIntent);
+            } else // For early versions, do what worked for you before.
+            {
+                Intent smsIntent = new Intent(android.content.Intent.ACTION_VIEW);
+                smsIntent.setType("vnd.android-dir/mms-sms");
+                smsIntent.putExtra("address", num);
+                smsIntent.putExtra("sms_body", message);
+                context.startActivity(smsIntent);
+            }
+            return;
+        }
+
         Intent intent = new Intent(SENT);
         intent.putExtra("num", num);
 
