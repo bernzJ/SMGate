@@ -144,15 +144,27 @@ class WebServer extends NanoHTTPD {
         }
     }
 
-    private void PrintLog(String data) {
-        TextView textMainLog = ((Activity) context).findViewById(R.id.textMainLog);
-        textMainLog.setText(log.append(data).append("\n").toString());
+    private void PrintLog(final String data) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                TextView textMainLog = ((Activity) context).findViewById(R.id.textMainLog);
+                textMainLog.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        TextView textMainLog = ((Activity) context).findViewById(R.id.textMainLog);
+                        textMainLog.setText(log.append(data).append("\n").toString());
 
-        int scrollAmount = textMainLog.getLayout().getLineTop(textMainLog.getLineCount()) - textMainLog.getHeight();
-        if (scrollAmount > 0)
-            textMainLog.scrollTo(0, scrollAmount);
-        else
-            textMainLog.scrollTo(0, 0);
+                        int scrollAmount = textMainLog.getLayout().getLineTop(textMainLog.getLineCount()) - textMainLog.getHeight();
+                        if (scrollAmount > 0)
+                            textMainLog.scrollTo(0, scrollAmount);
+                        else
+                            textMainLog.scrollTo(0, 0);
+                    }
+                });
+            }
+        }).start();
+
     }
 
     private String WrapInto(String head, String content) {
