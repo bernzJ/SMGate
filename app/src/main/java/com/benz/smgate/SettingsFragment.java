@@ -105,20 +105,15 @@ public class SettingsFragment extends Fragment {
             public void onClick(View v) {
                 View view = v.getRootView();
                 Context context = getContext();
+                PackageManager pm = context.getPackageManager();
                 Switch switchReplaceApp = (Switch) v;
                 if (view != null) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                         String pckg = context.getPackageName();
                         if (pckg.equals(getDefaultSmsAppPackageName(context)) && !switchReplaceApp.isChecked()) {
-                            context.getPackageManager()
-                                    .setComponentEnabledSetting(new ComponentName(context, SmsReceiver.class),
-                                            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                                            PackageManager.DONT_KILL_APP);
+                            toggleComponentEnabled(pm, context);
                         } else {
-                            context.getPackageManager()
-                                    .setComponentEnabledSetting(new ComponentName(context, SmsReceiver.class),
-                                            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                                            PackageManager.DONT_KILL_APP);
+                            toggleComponentEnabled(pm, context);
                             Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
                             intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, pckg);
                             startActivityForResult(intent, 1);
@@ -157,6 +152,13 @@ public class SettingsFragment extends Fragment {
                 return resolveInfos.get(0).activityInfo.packageName;
             return "-1";
         }
+    }
+
+    private void toggleComponentEnabled(PackageManager pm, Context context) {
+        ComponentName componentName = new ComponentName(context.getApplicationContext(), HeadlessSmsSendService.class);
+        int flag = ((pm.getComponentEnabledSetting(componentName) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) ? PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+                : PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
+        pm.setComponentEnabledSetting(componentName, flag, PackageManager.DONT_KILL_APP);
     }
 
 }
