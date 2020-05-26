@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Telephony;
@@ -17,11 +18,10 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import android.telephony.SmsManager;
-
-import androidx.annotation.RequiresApi;
 
 import fi.iki.elonen.NanoHTTPD;
 
@@ -33,6 +33,7 @@ class WebServer extends NanoHTTPD {
     private final StringBuilder log = new StringBuilder();
     private final SmsManager smsManager = SmsManager.getDefault();
     private static final String SENT = "SMS_SENT";
+
 
     WebServer(String ip, int port, boolean useIntent) {
         super(ip, port);

@@ -1,6 +1,12 @@
 package com.benz.smgate;
 
+import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -8,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
+import android.provider.Telephony;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,6 +24,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.Toast;
+
+import java.util.List;
 
 public class SettingsFragment extends Fragment {
 
@@ -31,31 +40,38 @@ public class SettingsFragment extends Fragment {
         Button btnSave = view.findViewById(R.id.btnSave);
 
         Switch switchIsEnabled = view.findViewById(R.id.switchIsEnabled);
-        Switch switchUseIntent = view.findViewById(R.id.switchUseIntent);
+        Switch switchRemoveSMSLimit = view.findViewById(R.id.switchRemoveSMSLimit);
+        Switch switchReplaceApp = view.findViewById(R.id.switchReplaceApp);
         EditText textServerIP = view.findViewById(R.id.textServerIP);
         EditText textServerPort = view.findViewById(R.id.textServerPort);
 
+        Context context = getContext();
+        String pckg = context.getPackageName();
+
         switchIsEnabled.setChecked(settingsManager.running);
-        switchUseIntent.setChecked(settingsManager.useIntent);
+        switchRemoveSMSLimit.setChecked(settingsManager.removeLimiter);
         textServerIP.setText(settingsManager.serverIP);
         textServerPort.setText(String.valueOf(settingsManager.serverPort));
 
+
+        if (pckg.equals(getDefaultSmsAppPackageName(context))) {
+            switchReplaceApp.setChecked(true);
+        }
         // Click handlers
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Log.d("TAG", v.getParent().toString());
                 View view = v.getRootView();
                 if (view != null) {
                     Switch switchIsEnabled = view.findViewById(R.id.switchIsEnabled);
-                    Switch switchUseIntent = view.findViewById(R.id.switchUseIntent);
+                    Switch switchRemoveSMSLimit = view.findViewById(R.id.switchRemoveSMSLimit);
                     EditText textServerIP = view.findViewById(R.id.textServerIP);
                     EditText textServerPort = view.findViewById(R.id.textServerPort);
 
                     Bundle args = new Bundle();
                     args.putBoolean("shouldUpdate", true);
 
-                    settingsManager.setSettings(switchIsEnabled.isChecked(), switchUseIntent.isChecked(), textServerIP.getText().toString(), Integer.parseInt(textServerPort.getText().toString()));
+                    settingsManager.setSettings(switchIsEnabled.isChecked(), switchRemoveSMSLimit.isChecked(), textServerIP.getText().toString(), Integer.parseInt(textServerPort.getText().toString()));
                     NavHostFragment.findNavController(SettingsFragment.this)
                             .navigate(R.id.action_settingsFragment_to_mainFragment, args);
                 }
@@ -67,7 +83,7 @@ public class SettingsFragment extends Fragment {
             public void onClick(View v) {
                 View view = v.getRootView();
                 if (view != null) {
-                    Switch switchIsEnabled = view.findViewById(R.id.switchIsEnabled);
+                    Switch switchIsEnabled = (Switch) v;
                     EditText textServerIP = view.findViewById(R.id.textServerIP);
                     EditText textServerPort = view.findViewById(R.id.textServerPort);
 
@@ -83,7 +99,64 @@ public class SettingsFragment extends Fragment {
                 }
             }
         });
+
+        switchReplaceApp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                View view = v.getRootView();
+                Context context = getContext();
+                Switch switchReplaceApp = (Switch) v;
+                if (view != null) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        String pckg = context.getPackageName();
+                        if (pckg.equals(getDefaultSmsAppPackageName(context)) && !switchReplaceApp.isChecked()) {
+                            context.getPackageManager()
+                                    .setComponentEnabledSetting(new ComponentName(context, SmsReceiver.class),
+                                            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                                            PackageManager.DONT_KILL_APP);
+                        } else {
+                            context.getPackageManager()
+                                    .setComponentEnabledSetting(new ComponentName(context, SmsReceiver.class),
+                                            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                                            PackageManager.DONT_KILL_APP);
+                            Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
+                            intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, pckg);
+                            startActivityForResult(intent, 1);
+                        }
+                    } else {
+                        Toast.makeText(context, "Not supported, set default via settings", Toast.LENGTH_LONG).show();
+                        switchReplaceApp.setChecked(false);
+                    }
+                }
+            }
+        });
+
         return view;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Switch switchReplaceApp = getView().findViewById(R.id.switchReplaceApp);
+        if (requestCode == 1) {
+            if (resultCode == Activity.RESULT_OK) {
+                switchReplaceApp.setChecked(true);
+            } else {
+                switchReplaceApp.setChecked(false);
+            }
+        }
+    }
+
+    public static String getDefaultSmsAppPackageName(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+            return Telephony.Sms.getDefaultSmsPackage(context);
+        else {
+            Intent intent = new Intent(Intent.ACTION_VIEW)
+                    .addCategory(Intent.CATEGORY_DEFAULT).setType("vnd.android-dir/mms-sms");
+            final List<ResolveInfo> resolveInfos = context.getPackageManager().queryIntentActivities(intent, 0);
+            if (!resolveInfos.isEmpty())
+                return resolveInfos.get(0).activityInfo.packageName;
+            return "-1";
+        }
     }
 
 }

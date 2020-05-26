@@ -9,8 +9,9 @@
     <string name="server_running_text">SMGate server running</string>
     <string name="preference_file_key">com.benz.smgate.prefs</string>
     <string name="preference_running">com.benz.smgate.prefs.running</string>
-    <string name="preference_use_intent">com.benz.smgate.prefs.use_intent</string>
+    <string name="preference_remove_limiter">com.benz.smgate.prefs.remove_limiter</string>
     <string name="preference_server_ip">com.benz.smgate.prefs.server_ip</string>
     <string name="preference_server_port">com.benz.smgate.prefs.server_port</string>
-    <string name="use_intent_to_send_sms">Use Intent to send SMS</string>
+    <string name="remove_sms_limit_require_root">Remove SMS limit (require root)</string>
+    <string name="replace_default_sms_application">Replace default SMS application</string>
 </resources>

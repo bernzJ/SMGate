@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
@@ -91,7 +90,7 @@ public class Server extends Service {
 
     public void startServer() {
         if (webServer == null) {
-            webServer = new WebServer(preferences.serverIP, preferences.serverPort, preferences.useIntent);
+            webServer = new WebServer(preferences.serverIP, preferences.serverPort, preferences.removeLimiter);
             webServer.setContext(context);
         }
         if (preferences.running) {
