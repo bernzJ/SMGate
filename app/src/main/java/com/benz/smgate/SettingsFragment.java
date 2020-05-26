@@ -106,14 +106,19 @@ public class SettingsFragment extends Fragment {
                 View view = v.getRootView();
                 Context context = getContext();
                 PackageManager pm = context.getPackageManager();
+                ComponentName component = new ComponentName(context, ComposeSmsActivity.class);
                 Switch switchReplaceApp = (Switch) v;
                 if (view != null) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                         String pckg = context.getPackageName();
                         if (pckg.equals(getDefaultSmsAppPackageName(context)) && !switchReplaceApp.isChecked()) {
-                            toggleComponentEnabled(pm, context);
+                            pm.setComponentEnabledSetting(component,
+                                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                                    PackageManager.DONT_KILL_APP);
                         } else {
-                            toggleComponentEnabled(pm, context);
+                            pm.setComponentEnabledSetting(component,
+                                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                                    PackageManager.DONT_KILL_APP);
                             Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
                             intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, pckg);
                             startActivityForResult(intent, 1);
@@ -155,7 +160,7 @@ public class SettingsFragment extends Fragment {
     }
 
     private void toggleComponentEnabled(PackageManager pm, Context context) {
-        ComponentName componentName = new ComponentName(context.getApplicationContext(), HeadlessSmsSendService.class);
+        ComponentName componentName = new ComponentName(context.getApplicationContext(), ComposeSmsActivity.class);
         int flag = ((pm.getComponentEnabledSetting(componentName) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) ? PackageManager.COMPONENT_ENABLED_STATE_DISABLED
                 : PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
         pm.setComponentEnabledSetting(componentName, flag, PackageManager.DONT_KILL_APP);
