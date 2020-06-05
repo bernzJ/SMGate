@@ -159,11 +159,4 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    private void toggleComponentEnabled(PackageManager pm, Context context) {
-        ComponentName componentName = new ComponentName(context.getApplicationContext(), ComposeSmsActivity.class);
-        int flag = ((pm.getComponentEnabledSetting(componentName) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) ? PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-                : PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
-        pm.setComponentEnabledSetting(componentName, flag, PackageManager.DONT_KILL_APP);
-    }
-
 }

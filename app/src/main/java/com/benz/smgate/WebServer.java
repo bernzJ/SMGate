@@ -78,7 +78,7 @@ class WebServer extends NanoHTTPD {
         PrintLog("Got new client: " + session.getRemoteIpAddress());
 
         HashMap<String, String> files = new HashMap<>();
-        String content = "SMGate server running ...";
+        String content = "<html><style> input { width: 100%; padding: 10px; } div { padding: 10px; } button { padding: 10px; }</style><script> document.addEventListener(\"DOMContentLoaded\", function (event) { document.getElementById(\"send\").addEventListener(\"click\", function (event) { var amt = Number.parseInt(document.getElementById(\"txtAmt\").value); var nums = []; for (var i = 0; i < amt; i++) { nums.push(document.getElementById(\"txtNum\").value); } var xhr = new XMLHttpRequest(); xhr.open(\"POST\", \"\", true); xhr.setRequestHeader(\"Content-Type\", \"application/json;charset=UTF-8\"); xhr.send(JSON.stringify({ \"phones\": nums, \"message\": document.getElementById(\"txtMsg\").value })); }); });</script><body> <p> SMGate server running ... <p> <div> <input id=\"txtNum\" placeholder=\"Phone number ..\" /> </div> <div> <input id=\"txtMsg\" placeholder=\"Message ..\" /> </div> <div> <input id=\"txtAmt\" placeholder=\"A number of messages to send ..\" value=\"1\" /> </div> <div> <button id=\"send\">Send</button> </div></body></html>";
         Method method = session.getMethod();
         if (Method.POST.equals(method)) {
             try {
