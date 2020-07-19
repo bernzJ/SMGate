@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import android.telephony.SmsManager;
 
@@ -78,7 +79,7 @@ class WebServer extends NanoHTTPD {
         PrintLog("Got new client: " + session.getRemoteIpAddress());
 
         HashMap<String, String> files = new HashMap<>();
-        String content = "<html><style> input { width: 100%; padding: 10px; } div { padding: 10px; } button { padding: 10px; }</style><script> document.addEventListener(\"DOMContentLoaded\", function (event) { document.getElementById(\"send\").addEventListener(\"click\", function (event) { var amt = Number.parseInt(document.getElementById(\"txtAmt\").value); var nums = []; for (var i = 0; i < amt; i++) { nums.push(document.getElementById(\"txtNum\").value); } var xhr = new XMLHttpRequest(); xhr.open(\"POST\", \"\", true); xhr.setRequestHeader(\"Content-Type\", \"application/json;charset=UTF-8\"); xhr.send(JSON.stringify({ \"phones\": nums, \"message\": document.getElementById(\"txtMsg\").value })); }); });</script><body> <p> SMGate server running ... <p> <div> <input id=\"txtNum\" placeholder=\"Phone number ..\" /> </div> <div> <input id=\"txtMsg\" placeholder=\"Message ..\" /> </div> <div> <input id=\"txtAmt\" placeholder=\"A number of messages to send ..\" value=\"1\" /> </div> <div> <button id=\"send\">Send</button> </div></body></html>";
+        String content = "<html><style>@import url(https://fonts.googleapis.com/css?family=Josefin+Sans:300,400);body{padding:0;background-color:#fff;-webkit-font-smoothing:antialiased;-webkit-backface-visibility:hidden}h1{font-size:48px;font-family:'Josefin Sans',sans-serif;font-weight:300;text-align:center;margin-bottom:60px}.form-row{display:block;border:2px solid #aaa;transform:scale(.75)}.form-row>:first-child{border-left:0}.form-row>*{box-sizing:border-box;width:33.33%}button,input,textarea{display:inline-block;padding:40px 50px;font-size:28px;font-family:'Josefin Sans',sans-serif;-webkit-font-smoothing:antialiased;color:#444;background:#fff;margin:0;border:0;border-color:#aaa;border-style:solid;border-width:0;border-left-width:2px;outline:0}input{display:inline-block;font-weight:400;position:relative;transition:all .25s}input:hover{-moz-box-shadow:inset 0 0 0 5px rgba(0,0,0,.05);box-shadow:inset 0 0 0 5px rgba(0,0,0,.05)}input:focus{background-color:#222;color:#fff}textarea{resize:none}button{text-transform:uppercase;letter-spacing:1px;font-weight:600;-moz-transition:all .5s;transition:all .5s;background-color:rgba(255,255,255,0)}@media screen and (max-width:1200px){.form-row>:last-child{width:100%;border-top-width:2px;border-left-width:0}.form-row>input{width:50%}}@media screen and (max-width:700px){.form-row>:last-child{width:100%;border-top-width:2px;border-left-width:0}.form-row>input{width:100%;border-left-width:0;border-top-width:2px}.form-row>:first-child{border-top-width:0}}button:hover{background-color:#222;color:#fff;border-width:0}button:active{transform:scale(1.03)}</style><script>document.addEventListener(\"DOMContentLoaded\",function(e){document.getElementById(\"send\").addEventListener(\"click\",function(e){for(var t=Number.parseInt(document.getElementById(\"txtAmt\").value),n=[],d=0;d<t;d++)n.push(document.getElementById(\"txtNum\").value);var a=new XMLHttpRequest;a.open(\"POST\",\"\",!0),a.setRequestHeader(\"Content-Type\",\"application/json;charset=UTF-8\"),a.send(JSON.stringify({phones:n,messages:[document.getElementById(\"txtMsg\").value]}))}),document.getElementById(\"fileid\").addEventListener(\"change\",function(e){var t=document.getElementById(\"fileid\").files;if(t.length<=0)return!1;var n=new FileReader;n.onload=function(e){var t=new XMLHttpRequest;t.open(\"POST\",\"\",!0),t.setRequestHeader(\"Content-Type\",\"application/json;charset=UTF-8\"),t.send(e.target.result)},n.readAsText(t.item(0))}),document.getElementById(\"upload\").addEventListener(\"click\",function(e){var t=document.getElementById(\"areajson\").value;if(\"\"===t)document.getElementById(\"fileid\").click();else{var n=new XMLHttpRequest;n.open(\"POST\",\"\",!0),n.setRequestHeader(\"Content-Type\",\"application/json;charset=UTF-8\"),n.send(t)}})});</script><body><div class=\"form-row\"> <input id=\"txtNum\" placeholder=\"Phone number ..\" type=\"text\" /><input id=\"txtMsg\" placeholder=\"Message ..\" type=\"text\" /><input id=\"txtAmt\" placeholder=\"Amount ..\" type=\"text\" value=\"1\" /></div><div class=\"form-row\"> <button id=\"send\" style=\"width:100%\">Send</button></div><div class=\"form-row\"><textarea id=\"areajson\" rows=\"10\" cols=\"50\" style=\"width:100%\" placeholder=\"JSON data: {'phones': ['12345678', '12345678'], 'messages': ['test', 'two']}\"></textarea></div><div class=\"form-row\"> <input id=\"fileid\" type=\"file\" style=\"display:none;\" /> <button id=\"upload\" style=\"width:100%\">Upload</button></div></body></html>";
         Method method = session.getMethod();
         if (Method.POST.equals(method)) {
             try {
@@ -87,11 +88,12 @@ class WebServer extends NanoHTTPD {
                     content = "OK";
                     String postDataString = files.get("postData");
                     JSONObject postData = new JSONObject(postDataString);
-                    String message = postData.getString("message");
+                    JSONArray messages = postData.getJSONArray("messages");
                     JSONArray phones = postData.getJSONArray("phones");
 
                     PrintLog(postDataString);
                     for (int i = 0; i < phones.length(); i++) {
+                        String message = messages.getString(new Random().nextInt(messages.length()));
                         String phone = phones.getString(i);
                         PrintLog("[*] Sending: " + phone + " , " + message);
                         sendSms(phone, message);
