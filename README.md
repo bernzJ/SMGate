@@ -4,12 +4,12 @@ Simple SMS gateway for sending built on top of nanohttpd (bundled as service, sh
 
 # Note
 
+Messages are randomly selected.
 This have no built in receive function.
 All messages sent will be saved in your default sms app.
 If you need more complex usage of the message, IE: one message for X phone. Feel free to edit the logic here: [WebServer.js](https://github.com/bernzJ/SMGate/blob/master/app/src/main/java/com/benz/smgate/WebServer.java#L81).
 
 # Usage
-## Notes: messages are randomly selected.
 
 The server expect a json object with the following params:
 ```javascript
